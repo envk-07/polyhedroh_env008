@@ -1,4 +1,4 @@
-from math import pi
+from math import pi, sqrt
 from common.r3 import R3
 from common.tk_drawer import TkDrawer
 
@@ -59,8 +59,31 @@ class Polyedr:
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
+    @staticmethod
+    def is_good_point(p):
+        """Точка хорошая, если её проекция строго внутри квадрата [-1,1]x[-1,1]"""
+        return -1 < p.x < 1 and -1 < p.y < 1
+
+    @staticmethod
+    def projected_edge_length(edge):
+        """Длина проекции ребра на плоскость XY (игнорируем Z)"""
+        dx = edge.fin.x - edge.beg.x
+        dy = edge.fin.y - edge.beg.y
+        return sqrt(dx*dx + dy*dy)
+
+    def sum_good_edges_projection_length(self):
+        """Сумма длин проекций рёбер, оба конца которых — хорошие точки"""
+        total = 0.0
+        for edge in self.edges:
+            if self.is_good_point(edge.beg) and self.is_good_point(edge.fin):
+                total += self.projected_edge_length(edge)
+        return total
+
     # Метод изображения полиэдра
     def draw(self, tk):
         tk.clean()
         for e in self.edges:
             tk.draw_line(e.beg, e.fin)
+
+        result = self.sum_good_edges_projection_length()
+        print(f"Сумма длин проекций рёбер с «хорошими» концами: {result:.6f}")
