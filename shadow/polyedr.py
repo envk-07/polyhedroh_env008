@@ -148,7 +148,9 @@ class Polyedr:
                     x, y, z = (float(x) for x in line.split())
                     raw_v = R3(x, y, z)  # ← исходная вершина
                     self.raw_vertexes.append(raw_v)  # ← сохраняем для расчётов
-                    self.vertexes.append(raw_v.rz(alpha).ry(beta).rz(gamma) * c)  # ← сохраняем для отрисовки
+                    self.vertexes.append(
+                        raw_v.rz(alpha).ry(beta).rz(gamma) *
+                        c)  # ← сохраняем для отрисовки
                 else:
                     # вспомогательный массив
                     buf = line.split()
@@ -157,11 +159,13 @@ class Polyedr:
                     # массив вершин этой грани
                     vertexes = list(self.vertexes[int(n) - 1] for n in buf)
                     # задание рёбер грани
-                    raw_vertexes = [self.raw_vertexes[int(n) - 1] for n in buf]  
+                    raw_vertexes = [self.raw_vertexes[int(n) - 1] for n in buf]
                     #  исходные вершины грани
                     for n in range(size):
                         self.edges.append(Edge(vertexes[n - 1], vertexes[n]))
-                        self.raw_edges.append(Edge(raw_vertexes[n - 1], raw_vertexes[n]))  # ← для расчёта
+                        self.raw_edges.append(
+                            # ← для расчёта
+                            Edge(raw_vertexes[n - 1], raw_vertexes[n]))
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
@@ -174,17 +178,17 @@ class Polyedr:
             for s in e.gaps:
                 tk.draw_line(e.r3(s.beg), e.r3(s.fin))
 
-
     def _is_good(self, v):
         # проверка «хорошести» точки
         return -1 < v.x < 1 and -1 < v.y < 1
 
     def _proj_len(self, e):
-        #длина проекции ребра
+        # длина проекции ребра
         dx = e.fin.x - e.beg.x
         dy = e.fin.y - e.beg.y
         return sqrt(dx * dx + dy * dy)
 
     def good_edges_sum(self):
-        #итоговая характеристика
-        return sum(self._proj_len(e) for e in self.raw_edges if self._is_good(e.beg) and self._is_good(e.fin))
+        # итоговая характеристика
+        return sum(self._proj_len(e) for e in self.raw_edges if self._is_good(
+            e.beg) and self._is_good(e.fin))
