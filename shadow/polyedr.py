@@ -127,8 +127,6 @@ class Polyedr:
 
         # списки вершин, рёбер и граней полиэдра
         self.vertexes, self.edges, self.facets = [], [], []
-        self.raw_vertexes = []  # ← для расчётов (без c и поворотов)
-        self.raw_edges = []     # ← для расчётов (без c и поворотов)
 
         # список строк файла
         with open(file) as f:
@@ -146,11 +144,8 @@ class Polyedr:
                 elif i < nv + 2:
                     # задание всех вершин полиэдра
                     x, y, z = (float(x) for x in line.split())
-                    raw_v = R3(x, y, z)  # ← исходная вершина
-                    self.raw_vertexes.append(raw_v)  # ← сохраняем для расчётов
-                    self.vertexes.append(
-                        raw_v.rz(alpha).ry(beta).rz(gamma) *
-                        c)  # ← сохраняем для отрисовки
+                    self.vertexes.append(R3(x, y, z).rz(
+                        alpha).ry(beta).rz(gamma) * c)
                 else:
                     # вспомогательный массив
                     buf = line.split()
@@ -159,13 +154,8 @@ class Polyedr:
                     # массив вершин этой грани
                     vertexes = list(self.vertexes[int(n) - 1] for n in buf)
                     # задание рёбер грани
-                    raw_vertexes = [self.raw_vertexes[int(n) - 1] for n in buf]
-                    #  исходные вершины грани
                     for n in range(size):
                         self.edges.append(Edge(vertexes[n - 1], vertexes[n]))
-                        self.raw_edges.append(
-                            # ← для расчёта
-                            Edge(raw_vertexes[n - 1], raw_vertexes[n]))
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
@@ -189,6 +179,8 @@ class Polyedr:
         return sqrt(dx * dx + dy * dy)
 
     def good_edges_sum(self):
-        # итоговая характеристика
-        return sum(self._proj_len(e) for e in self.raw_edges if self._is_good(
-            e.beg) and self._is_good(e.fin))
+        """Сумма длин проекций рёбер с двумя «хорошими» концами."""
+        return sum(
+            self._proj_len(e) for e in self.edges
+            if self._is_good(e.beg) and self._is_good(e.fin)
+        )

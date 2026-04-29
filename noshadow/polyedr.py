@@ -1,4 +1,4 @@
-from math import pi, sqrt
+from math import pi
 from common.r3 import R3
 from common.tk_drawer import TkDrawer
 
@@ -27,9 +27,6 @@ class Polyedr:
 
         # списки вершин, рёбер и граней полиэдра
         self.vertexes, self.edges, self.facets = [], [], []
-        # списки для расчёта характеристики (без гомотетии и поворотов)
-        self.raw_vertexes = []
-        self.raw_edges = []
 
         # список строк файла
         with open(file) as f:
@@ -47,51 +44,34 @@ class Polyedr:
                 elif i < nv + 2:
                     # задание всех вершин полиэдра
                     x, y, z = (float(x) for x in line.split())
-                    # сохраняем исходную вершину (для расчёта характеристики)
-                    raw_v = R3(x, y, z)
-                    self.raw_vertexes.append(raw_v)
-                    # сохраняем преобразованную вершину (для отрисовки)
                     self.vertexes.append(R3(x, y, z).rz(
                         alpha).ry(beta).rz(gamma) * c)
                 else:
-
                     # вспомогательный массив
                     buf = line.split()
                     # количество вершин очередной грани
                     size = int(buf.pop(0))
-                    # массив вершин этой грани (преобразованные, для отрисовки)
+                    # массив вершин этой грани
                     vertexes = [self.vertexes[int(n) - 1] for n in buf]
-                    # массив исходных вершин этой грани (для расчёта)
-                    raw_vertexes = [self.raw_vertexes[int(n) - 1] for n in buf]
                     # задание рёбер грани
                     for n in range(size):
-                        # ребро для отрисовки (преобразованное)
                         self.edges.append(Edge(vertexes[n - 1], vertexes[n]))
-                        # ребро для расчёта (исходное)
-                        self.raw_edges.append(
-                            Edge(raw_vertexes[n - 1], raw_vertexes[n]))
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
-    # Метод изображения полиэдра
-    def draw(self, tk):
-        tk.clean()
-        for e in self.edges:
-            tk.draw_line(e.beg, e.fin)
-
     def _is_good(self, v):
-        """Проверка «хорошей» точки (строго внутри [-1, 1]×[-1, 1])."""
+        """Точка «хорошая», если строго внутри [-1, 1]×[-1, 1]"""
         return -1 < v.x < 1 and -1 < v.y < 1
 
     def _proj_len(self, e):
-        """Длина проекции ребра на плоскость XY."""
+        """Длина проекции ребра на XY"""
         dx = e.fin.x - e.beg.x
         dy = e.fin.y - e.beg.y
         return sqrt(dx * dx + dy * dy)
 
     def good_edges_sum(self):
-        """Сумма длин проекций рёбер с двумя «хорошими» концами."""
+        """Сумма длин проекций рёбер с двумя «хорошими» концами"""
         return sum(
-            self._proj_len(e) for e in self.raw_edges
+            self._proj_len(e) for e in self.edges
             if self._is_good(e.beg) and self._is_good(e.fin)
         )
