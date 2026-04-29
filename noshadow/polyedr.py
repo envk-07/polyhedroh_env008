@@ -1,4 +1,4 @@
-from math import pi
+from math import pi, sqrt
 from common.r3 import R3
 from common.tk_drawer import TkDrawer
 
@@ -64,3 +64,22 @@ class Polyedr:
         tk.clean()
         for e in self.edges:
             tk.draw_line(e.beg, e.fin)
+
+
+    def _is_good(self, v):
+        """Точка «хорошая», если её проекция строго внутри квадрата [-1,1]×[-1,1]"""
+        return -1 < v.x < 1 and -1 < v.y < 1
+
+    def _proj_len(self, e):
+        """Длина проекции ребра на плоскость XY"""
+        dx = e.fin.x - e.beg.x
+        dy = e.fin.y - e.beg.y
+        return sqrt(dx * dx + dy * dy)
+
+    def good_edges_sum(self):
+        """Сумма длин проекций рёбер, у которых оба конца — «хорошие» точки"""
+        s = 0.0
+        for e in self.edges:
+            if self._is_good(e.beg) and self._is_good(e.fin):
+                s += self._proj_len(e)
+        return s
