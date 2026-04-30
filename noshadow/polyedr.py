@@ -59,6 +59,12 @@ class Polyedr:
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
+    # Метод изображения полиэдра
+    def draw(self, tk):
+        tk.clean()
+        for e in self.edges:
+            tk.draw_line(e.beg, e.fin)
+
     def _is_good(self, v):
         """Точка «хорошая», если строго внутри [-1, 1]×[-1, 1]"""
         return -1 < v.x < 1 and -1 < v.y < 1
